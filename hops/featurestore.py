@@ -159,7 +159,8 @@ from pyspark.sql import DataFrame
 from pyspark.rdd import RDD
 from pyspark.sql import SQLContext
 from tempfile import TemporaryFile
-
+from petastorm.etl.dataset_metadata import materialize_dataset
+import pyarrow
 # for backwards compatibility
 try:
     import h5py
@@ -2222,7 +2223,7 @@ def get_training_dataset(training_dataset, featurestore=None, training_dataset_v
                     constants.FEATURE_STORE.TRAINING_DATASET_TSV_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_CSV_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_PARQUET_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_TFRECORDS_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_NPY_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_HDF5_FORMAT]))
 
 
-def _write_training_dataset_hdfs(df, path, data_format, write_mode, name):
+def _write_training_dataset_hdfs(df, path, data_format, write_mode, name, petastorm_schema, rowgroup_size_mb):
     """
     Materializes a spark dataframe to a training dataset on HDFS.
 
@@ -2232,6 +2233,8 @@ def _write_training_dataset_hdfs(df, path, data_format, write_mode, name):
         :data_format: the format to materialize to
         :write_mode: spark write mode, 'append' or 'overwrite'
         :name: the name of the training dataset
+        :petastorm_schema the :class:`petastorm.unischema.Unischema` definition of your dataset
+        :rowgroup_size_mb the parquet row group size to use for your dataset
 
     Returns:
         None
@@ -2297,11 +2300,29 @@ def _write_training_dataset_hdfs(df, path, data_format, write_mode, name):
         tf.seek(0)
         hdfs.dump(tf.read(), path + constants.FEATURE_STORE.TRAINING_DATASET_HDF5_SUFFIX)
 
-    if data_format != constants.FEATURE_STORE.TRAINING_DATASET_TSV_FORMAT and data_format != constants.FEATURE_STORE.TRAINING_DATASET_CSV_FORMAT and data_format != constants.FEATURE_STORE.TRAINING_DATASET_PARQUET_FORMAT and data_format != constants.FEATURE_STORE.TRAINING_DATASET_TFRECORDS_FORMAT and data_format != constants.FEATURE_STORE.TRAINING_DATASET_NPY_FORMAT and data_format != constants.FEATURE_STORE.TRAINING_DATASET_HDF5_FORMAT:
+    if data_format == constants.FEATURE_STORE.TRAINING_DATASET_PETASTORM_FORMAT:
+        pyarrow_filesystem = pyarrow.hdfs.connect(host=hdfs.project_path(), user=hdfs.project_user())
+        with materialize_dataset(spark, path, petastorm_schema, rowgroup_size_mb, pyarrow_filesystem=pyarrow_filesystem):
+            df.write.mode(write_mode).parquet(path)
+
+    if data_format != constants.FEATURE_STORE.TRAINING_DATASET_TSV_FORMAT and \
+                    data_format != constants.FEATURE_STORE.TRAINING_DATASET_CSV_FORMAT and \
+                    data_format != constants.FEATURE_STORE.TRAINING_DATASET_PARQUET_FORMAT and \
+                    data_format != constants.FEATURE_STORE.TRAINING_DATASET_TFRECORDS_FORMAT and \
+                    data_format != constants.FEATURE_STORE.TRAINING_DATASET_NPY_FORMAT and \
+                    data_format != constants.FEATURE_STORE.TRAINING_DATASET_HDF5_FORMAT and \
+                    data_format != constants.FEATURE_STORE.TRAINING_DATASET_PETASTORM_FORMAT:
         raise AssertionError(
             "invalid data format to materialize training dataset. The provided format: {} is not in the list of supported formats: {}".format(
                 data_format, ",".join[
-                    constants.FEATURE_STORE.TRAINING_DATASET_TSV_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_CSV_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_PARQUET_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_TFRECORDS_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_NPY_FORMAT, constants.FEATURE_STORE.TRAINING_DATASET_HDF5_FORMAT]))
+                    constants.FEATURE_STORE.TRAINING_DATASET_TSV_FORMAT,
+                    constants.FEATURE_STORE.TRAINING_DATASET_CSV_FORMAT,
+                    constants.FEATURE_STORE.TRAINING_DATASET_PARQUET_FORMAT,
+                    constants.FEATURE_STORE.TRAINING_DATASET_TFRECORDS_FORMAT,
+                    constants.FEATURE_STORE.TRAINING_DATASET_NPY_FORMAT,
+                    constants.FEATURE_STORE.TRAINING_DATASET_HDF5_FORMAT,
+                    constants.FEATURE_STORE.TRAINING_DATASET_PETASTORM_FORMAT
+                ]))
 
     spark.sparkContext.setJobGroup("", "")
 
@@ -2310,8 +2331,7 @@ def create_training_dataset(df, training_dataset, description="", featurestore=N
                             data_format="tfrecords", training_dataset_version=1,
                             job_name=None, dependencies=[], descriptive_statistics=True, feature_correlation=True,
                             feature_histograms=True, cluster_analysis=True, stat_columns=None, num_bins=20,
-                            corr_method='pearson',
-                            num_clusters=5):
+                            corr_method='pearson', num_clusters=5, petastorm_schema=None, rowgroup_size_mb=256):
     """
     Creates a new training dataset from a dataframe, saves metadata about the training dataset to the database
     and saves the materialized dataset on hdfs
@@ -2339,6 +2359,8 @@ def create_training_dataset(df, training_dataset, description="", featurestore=N
         :num_bins: number of bins to use for computing histograms
         :num_clusters: number of clusters to use for cluster analysis
         :corr_method: the method to compute feature correlation with (pearson or spearman)
+        :petastorm_schema the :class:`petastorm.unischema.Unischema` definition of your dataset
+        :rowgroup_size_mb the parquet row group size to use for your dataset
 
     Returns:
         None
@@ -2377,9 +2399,8 @@ def create_training_dataset(df, training_dataset, description="", featurestore=N
             print("Could not infer tfrecords schema for the dataframe, {}".format(str(e)))
     _write_training_dataset_hdfs(spark_df,
                                  hdfs_path + constants.DELIMITERS.SLASH_DELIMITER + training_dataset,
-                                 data_format,
-                                 constants.SPARK_CONFIG.SPARK_OVERWRITE_MODE,
-                                 training_dataset)
+                                 data_format, constants.SPARK_CONFIG.SPARK_OVERWRITE_MODE,
+                                 training_dataset, petastorm_schema, rowgroup_size_mb)
 
 
 def _update_training_dataset_stats_rest(
@@ -2443,7 +2464,7 @@ def insert_into_training_dataset(
         df, training_dataset, featurestore=None, training_dataset_version=1,
         descriptive_statistics=True, feature_correlation=True,
         feature_histograms=True, cluster_analysis=True, stat_columns=None, num_bins=20, corr_method='pearson',
-        num_clusters=5, write_mode="overwrite", ):
+        num_clusters=5, write_mode="overwrite", petastorm_schema=None, rowgroup_size_mb=256):
     """
     Inserts the data in a training dataset from a spark dataframe (append or overwrite)
 
@@ -2468,6 +2489,8 @@ def insert_into_training_dataset(
         :num_clusters: number of clusters to use for cluster analysis
         :corr_method: the method to compute feature correlation with (pearson or spearman)
         :write_mode: spark write mode ('append' or 'overwrite'). Note: append is not supported for tfrecords datasets.
+        :petastorm_schema the :class:`petastorm.unischema.Unischema` definition of your dataset
+        :rowgroup_size_mb the parquet row group size to use for your dataset
 
     Returns:
         None
@@ -2503,9 +2526,7 @@ def insert_into_training_dataset(
             print("Could not infer tfrecords schema for the dataframe, {}".format(str(e)))
     _write_training_dataset_hdfs(spark_df,
                                  hdfs_path + constants.DELIMITERS.SLASH_DELIMITER + training_dataset,
-                                 data_format,
-                                 write_mode,
-                                 training_dataset
+                                 data_format, write_mode, training_dataset, petastorm_schema, rowgroup_size_mb
                                  )
 
 
