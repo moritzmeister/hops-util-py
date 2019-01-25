@@ -1159,13 +1159,16 @@ def _compute_feature_histograms(spark_df, num_bins=20):
 
     """
     histograms_json = []
-    for idx, col in enumerate(spark_df.dtypes):
+    def compute_histogram_for_col(col):
         col_hist = spark_df.select(col[0]).rdd.flatMap(lambda x: x).histogram(num_bins)
         col_pd_hist = pd.DataFrame(list(zip(*col_hist)), columns=['bin', 'frequency']).set_index('bin')
         col_pd_hist_json = col_pd_hist.to_json()
         col_pd_hist_dict = json.loads(col_pd_hist_json)
         col_pd_hist_dict["feature"] = col[0]
-        histograms_json.append(col_pd_hist_dict)
+        return col_pd_hist_dict
+
+    spark = util._find_spark()
+    histograms_json = spark.sparkContext.parallelize(spark_df.dtypes, len(spark_df.dtypes)).map(compute_histogram_for_col).collect()
     return histograms_json
 
 
