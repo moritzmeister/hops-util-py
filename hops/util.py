@@ -76,7 +76,8 @@ def _get_hopsworks_rest_endpoint():
     return os.environ[constants.ENV_VARIABLES.REST_ENDPOINT_END_VAR]
 
 def _get_host_port_pair():
-    """
+    """_get_host_port_pair
+
     Removes "http or https" from the rest endpoint and returns a list
     [endpoint, port], where endpoint is on the format /path.. without http://
 

@@ -399,7 +399,7 @@ def _attach_experiment_xattr(app_id, run_id, json_data, xattr):
                    constants.REST_CONFIG.HOPSWORKS_EXPERIMENTS_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER + \
                    app_id + "_" + str(run_id) + "?xattr=" + xattr
 
-    resp = util.send_request_with_session('POST', resource_url, data=json_data, headers=headers)
+    resp = util.send_request('POST', resource_url, data=json_data, headers=headers)
     print(resource_url)
     print(resp)
 
@@ -424,7 +424,7 @@ def _attach_model_link_xattr(ml_id, model, xattr):
                    constants.REST_CONFIG.HOPSWORKS_EXPERIMENTS_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER + \
                    ml_id + "?xattr=" + xattr + "&model=" + model
 
-    resp = util.send_request_with_session('POST', resource_url)
+    resp = util.send_request('POST', resource_url)
     print(resource_url)
     print(resp)
 
@@ -450,7 +450,7 @@ def _attach_model_xattr(ml_id, json_data, xattr):
                    constants.REST_CONFIG.HOPSWORKS_MODELS_RESOURCE + constants.DELIMITERS.SLASH_DELIMITER + \
                    ml_id + "?xattr=" + xattr
 
-    resp = util.send_request_with_session('POST', resource_url, data=json_data, headers=headers)
+    resp = util.send_request('POST', resource_url, data=json_data, headers=headers)
     print(resource_url)
     print(resp)
     if json_data is not None:
