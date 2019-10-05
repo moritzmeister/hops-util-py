@@ -743,7 +743,3 @@ def _get_best(root_logdir, direction):
             return_dict = json.loads(fi.read())
             fi.close()
         return min_logdir, return_dict
-
-
-
-
