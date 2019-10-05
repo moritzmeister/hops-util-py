@@ -53,7 +53,7 @@ def _get_all_accuracies(tensorboard_hdfs_logdir, args_dict, number_params):
         for k in population_dict:
             path_to_log+=k+'='+str(args_dict[k][i])+ '&'
         path_to_log = path_to_log[:(len(path_to_log) -1)]
-        path_to_log = path_to_log + '/.metric.json'
+        path_to_log = path_to_log + '/.metric'
 
         with pydoop.hdfs.open(path_to_log, "r") as fi:
             metric = fi.read()
@@ -717,7 +717,7 @@ def _get_best(root_logdir, direction):
         for individual in hdfs.ls(generation):
             invidual_files = hdfs.ls(individual, recursive=True)
             for file in invidual_files:
-                if file.endswith("/.metric.json"):
+                if file.endswith("/.metric"):
                     val = hdfs.load(file)
                     val = float(val)
 

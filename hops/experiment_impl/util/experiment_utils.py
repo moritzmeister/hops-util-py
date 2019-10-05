@@ -62,7 +62,7 @@ def _handle_return(retval, hdfs_exec_logdir, optimization_key):
     return_file = hdfs_exec_logdir + '/.return.json'
     hdfs.dump(json.dumps(retval), return_file)
 
-    metric_file = hdfs_exec_logdir + '/.metric.json'
+    metric_file = hdfs_exec_logdir + '/.metric'
     hdfs.dump(str(opt_val), metric_file)
 
 def _validate_optimization_value(opt_val):
