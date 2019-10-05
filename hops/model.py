@@ -33,7 +33,7 @@ def get_best_model(name, metric, direction):
                    constants.REST_CONFIG.HOPSWORKS_MODELS_RESOURCE + \
                    "?filter_by=name_eq:" + name + "&sort_by=" + metric + ":" + direction + "&limit=1"
 
-    response_object = util.send_request_with_session('GET', resource_url, headers=headers)
+    response_object = util.send_request('GET', resource_url, headers=headers)
 
     if not response_object.ok:
         raise ModelNotFound("No model with name: could be found".format(name))
@@ -57,7 +57,7 @@ def get_model(name, version):
 
     print(resource_url)
 
-    response_object = util.send_request_with_session('GET', resource_url, headers=headers)
+    response_object = util.send_request('GET', resource_url, headers=headers)
 
     if response_object.ok:
         return response_object
