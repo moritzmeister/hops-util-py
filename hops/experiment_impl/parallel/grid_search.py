@@ -11,7 +11,7 @@ import six
 import time
 import os
 
-def _run(sc, map_fun, run_id, args_dict, direction='max', local_logdir=False, name="no-name", optimization_key=None):
+def _run(sc, map_fun, run_id, args_dict, direction=Direction.MAX, local_logdir=False, name="no-name", optimization_key=None):
     """
     Run the wrapper function with each hyperparameter combination as specified by the dictionary
 
@@ -29,8 +29,8 @@ def _run(sc, map_fun, run_id, args_dict, direction='max', local_logdir=False, na
     app_id = str(sc.applicationId)
     num_executions = 1
 
-    if direction != 'max' and direction != 'min':
-        raise ValueError('Invalid direction ' + direction +  ', must be max or min')
+    if direction != Direction.MAX and direction != Direction.MIN:
+        raise ValueError('Invalid direction ' + direction +  ', must be Direction.MAX or Direction.MIN')
 
     arg_lists = list(args_dict.values())
     currentLen = len(arg_lists[0])
@@ -58,11 +58,11 @@ def _run(sc, map_fun, run_id, args_dict, direction='max', local_logdir=False, na
     best_val = ""
     return_dict = {}
 
-    if direction == 'max':
+    if direction == Direction.MAX:
         param_combination = max_hp
         best_val = str(max_val)
         return_dict = max_return_dict
-    elif direction == 'min':
+    elif direction == Direction.MIN:
         param_combination = min_hp
         best_val = str(min_val)
         return_dict

@@ -119,7 +119,7 @@ def launch(map_fun, args_dict=None, name='no-name', local_logdir=False, versione
     finally:
         _end_run(sc)
 
-def random_search(map_fun, boundary_dict, direction='max', samples=10, name='no-name', local_logdir=False, versioned_resources=None, description=None, optimization_key='metric'):
+def random_search(map_fun, boundary_dict, direction=Direction.MAX, samples=10, name='no-name', local_logdir=False, versioned_resources=None, description=None, optimization_key='metric'):
     """
 
     *Parallel Experiment*
@@ -215,7 +215,7 @@ def random_search(map_fun, boundary_dict, direction='max', samples=10, name='no-
     finally:
         _end_run(sc)
 
-def differential_evolution(objective_function, boundary_dict, direction = 'max', generations=4, population=6, mutation=0.5, crossover=0.7, cleanup_generations=False, name='no-name', local_logdir=False, versioned_resources=None, description=None, optimization_key='metric'):
+def differential_evolution(objective_function, boundary_dict, direction = Direction.MAX, generations=4, population=6, mutation=0.5, crossover=0.7, cleanup_generations=False, name='no-name', local_logdir=False, versioned_resources=None, description=None, optimization_key='metric'):
     """
     *Parallel Experiment*
 
@@ -230,7 +230,7 @@ def differential_evolution(objective_function, boundary_dict, direction = 'max',
     >>> def train_nn(learning_rate, layers, dropout):
     >>>    import tensorflow
     >>>    return network.evaluate(learning_rate, layers, dropout)
-    >>> experiment.differential_evolution(train_nn, boundary_dict, direction='max')
+    >>> experiment.differential_evolution(train_nn, boundary_dict, direction=Direction.MAX)
 
     Returning multiple outputs, including images and logs:
 
@@ -248,12 +248,12 @@ def differential_evolution(objective_function, boundary_dict, direction = 'max',
     >>>    img.save('diagram.png')
     >>>    return {'accuracy': accuracy, 'loss': loss, 'logfile': 'logfile.txt', 'diagram': 'diagram.png'}
     >>> # Important! Remember: optimization_key must be set when returning multiple outputs
-    >>> experiment.differential_evolution(train_nn, boundary_dict, direction='max', optimization_key='accuracy')
+    >>> experiment.differential_evolution(train_nn, boundary_dict, direction=Direction.MAX, optimization_key='accuracy')
 
     Args:
         :objective_function: the function to run, must return a metric
         :boundary_dict: a dict where each key corresponds to an argument of *objective_function* and the correspond value should be a list of two elements. The first element being the lower bound for the parameter and the the second element the upper bound.
-        :direction: 'max' to maximize the returned metric, 'min' to minize the returned metric
+        :direction: Direction.MAX to maximize the returned metric, Direction.MIN to minize the returned metric
         :generations: number of generations
         :population: size of population
         :mutation: mutation rate to explore more different hyperparameters
@@ -309,7 +309,7 @@ def differential_evolution(objective_function, boundary_dict, direction = 'max',
     finally:
         _end_run(sc)
 
-def grid_search(map_fun, grid_dict, direction='max', name='no-name', local_logdir=False, versioned_resources=None, description=None, optimization_key='metric'):
+def grid_search(map_fun, grid_dict, direction=Direction.MAX, name='no-name', local_logdir=False, versioned_resources=None, description=None, optimization_key='metric'):
     """
     *Parallel Experiment*
 
@@ -326,7 +326,7 @@ def grid_search(map_fun, grid_dict, direction='max', name='no-name', local_logdi
     >>>    import tensorflow
     >>>    # Put all code inside the wrapper function
     >>>    return network.evaluate(learning_rate, layers, dropout)
-    >>> experiment.grid_search(train_nn, grid_dict, direction='max')
+    >>> experiment.grid_search(train_nn, grid_dict, direction=Direction.MAX)
 
     Returning multiple outputs, including images and logs:
 
@@ -344,12 +344,12 @@ def grid_search(map_fun, grid_dict, direction='max', name='no-name', local_logdi
     >>>    img.save('diagram.png')
     >>>    return {'accuracy': accuracy, 'loss': loss, 'logfile': 'logfile.txt', 'diagram': 'diagram.png'}
     >>> # Important! Remember: optimization_key must be set when returning multiple outputs
-    >>> experiment.grid_search(train_nn, grid_dict, direction='max', optimization_key='accuracy')
+    >>> experiment.grid_search(train_nn, grid_dict, direction=Direction.MAX, optimization_key='accuracy')
 
     Args:
         :map_fun: the function to run, must return a metric
         :grid_dict: a dict with a key for each argument with a corresponding value being a list containing the hyperparameters to test, internally all possible combinations will be generated and run as separate Experiments
-        :direction: 'max' to maximize the returned metric, 'min' to minize the returned metric
+        :direction: Direction.MAX to maximize the returned metric, Direction.MIN to minimize the returned metric
         :name: name of the experiment
         :local_logdir: True if *tensorboard.logdir()* should be in the local filesystem, otherwise it is in HDFS
         :versioned_resources: A list of HDFS paths of resources to version with this experiment

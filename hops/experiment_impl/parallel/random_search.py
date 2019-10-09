@@ -11,7 +11,7 @@ import time
 import random
 import os
 
-def _run(sc, map_fun, run_id, args_dict, samples, direction='max', local_logdir=False, name="no-name", optimization_key=None):
+def _run(sc, map_fun, run_id, args_dict, samples, direction=Direction.MAX, local_logdir=False, name="no-name", optimization_key=None):
     """
 
     Args:
@@ -72,11 +72,11 @@ def _run(sc, map_fun, run_id, args_dict, samples, direction='max', local_logdir=
     best_val = ""
     return_dict = {}
 
-    if direction == 'max':
+    if direction == Direction.MAX:
         param_combination = max_hp
         best_val = str(max_val)
         return_dict = max_return_dict
-    elif direction == 'min':
+    elif direction == Direction.MIN:
         param_combination = min_hp
         best_val = str(min_val)
         return_dict = min_return_dict

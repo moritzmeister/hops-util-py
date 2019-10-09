@@ -139,7 +139,7 @@ class DifferentialEvolution:
     _ordered_population_dict = []
     _param_names = []
 
-    def __init__(self, objective_function, parbounds, types, ordered_dict, direction = 'max', generations=10, population=10, mutation=0.5, crossover=0.7, name="no-name"):
+    def __init__(self, objective_function, parbounds, types, ordered_dict, direction = Direction.MAX, generations=10, population=10, mutation=0.5, crossover=0.7, name="no-name"):
         """
 
         Args:
@@ -202,9 +202,9 @@ class DifferentialEvolution:
 
             new_gen_avg = sum(self._scores)/self.n
 
-            if self.direction == 'max':
+            if self.direction == Direction.MAX:
                 new_gen_best = max(self._scores)
-            elif self.direction == 'min':
+            elif self.direction == Direction.MIN:
                 new_gen_best = min(self._scores)
             else:
                 raise ValueError('invalid direction: ' + self.direction)
@@ -376,9 +376,9 @@ class DifferentialEvolution:
             parsed_population = self._parse_to_dict(parsed_population)
             self._scores = self.objective_function(parsed_population, name=self.name)
 
-            if self.direction == 'max':
+            if self.direction == Direction.MAX:
                 new_gen_best = max(self._scores)
-            elif self.direction == 'min':
+            elif self.direction == Direction.MIN:
                 new_gen_best = min(self._scores)
             else:
                 raise ValueError('invalid direction: ' + self.direction)
@@ -401,11 +401,11 @@ class DifferentialEvolution:
         for i in range(self.n):
             trial_vec_score_i = trial_population_scores[i]
             target_vec_score_i = self._scores[i]
-            if self.direction == 'max':
+            if self.direction == Direction.MAX:
                 if trial_vec_score_i > target_vec_score_i:
                     self._scores[i] = trial_vec_score_i
                     population[i] = trial_population[i]
-            elif self.direction == 'min':
+            elif self.direction == Direction.MIN:
                 if trial_vec_score_i < target_vec_score_i:
                     self._scores[i] = trial_vec_score_i
                     population[i] = trial_population[i]
@@ -461,7 +461,7 @@ class DifferentialEvolution:
     def get_dict(self):
         return self._ordered_population_dict
 
-def _run(function, search_dict, direction = 'max', generations=4, population=6, mutation=0.5, crossover=0.7, cleanup_generations=False, local_logdir=False, name="no-name", optimization_key=None):
+def _run(function, search_dict, direction = Direction.MAX, generations=4, population=6, mutation=0.5, crossover=0.7, cleanup_generations=False, local_logdir=False, name="no-name", optimization_key=None):
     """
 
     Args:
@@ -731,7 +731,7 @@ def _get_best(root_logdir, direction):
 
 
 
-    if direction == 'max':
+    if direction == Direction.MAX:
         return_dict = {}
         with hdfs.open_file(max_logdir + '/.return.json', flags="r") as fi:
             return_dict = json.loads(fi.read())
