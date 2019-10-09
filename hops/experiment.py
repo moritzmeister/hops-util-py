@@ -104,9 +104,9 @@ def launch(map_fun, args_dict=None, name='no-name', local_logdir=False, versione
 
         experiment_json = None
         if args_dict:
-            experiment_json = experiment_utils._populate_experiment(name, 'launcher', 'EXPERIMENT', json.dumps(args_dict), versioned_path, description, app_id, None, None)
+            experiment_json = experiment_utils._populate_experiment(name, 'launch', 'EXPERIMENT', json.dumps(args_dict), versioned_path, description, app_id, None, None)
         else:
-            experiment_json = experiment_utils._populate_experiment(name, 'launcher', 'EXPERIMENT', None, versioned_path, description, app_id, None, None)
+            experiment_json = experiment_utils._populate_experiment(name, 'launch', 'EXPERIMENT', None, versioned_path, description, app_id, None, None)
 
         experiment_utils._attach_experiment_xattr(app_id, run_id, experiment_json, 'CREATE')
 
