@@ -5,6 +5,7 @@ Gridsearch implementation
 from hops import hdfs, tensorboard, devices
 
 from hops.experiment_impl.util import experiment_utils
+from hops.experiment import Direction
 
 import threading
 import six

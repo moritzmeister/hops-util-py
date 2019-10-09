@@ -4,6 +4,7 @@ Random Search implementation
 
 from hops.experiment_impl.util import experiment_utils
 from hops import devices, tensorboard, hdfs
+from hops.experiment import Direction
 
 import threading
 import six

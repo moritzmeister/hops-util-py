@@ -9,6 +9,7 @@ import os
 
 from hops import hdfs, tensorboard, devices, util
 from hops.experiment_impl.util import experiment_utils
+from hops.experiment import Direction
 
 import pydoop.hdfs
 import threading
