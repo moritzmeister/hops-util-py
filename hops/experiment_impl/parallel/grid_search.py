@@ -30,7 +30,7 @@ def _run(sc, map_fun, run_id, args_dict, direction=Direction.MAX, local_logdir=F
     app_id = str(sc.applicationId)
     num_executions = 1
 
-    if direction != Direction.MAX and direction != Direction.MIN:
+    if direction.upper() != Direction.MAX and direction.upper() != Direction.MIN:
         raise ValueError('Invalid direction ' + direction +  ', must be Direction.MAX or Direction.MIN')
 
     arg_lists = list(args_dict.values())
@@ -59,11 +59,11 @@ def _run(sc, map_fun, run_id, args_dict, direction=Direction.MAX, local_logdir=F
     best_val = ""
     return_dict = {}
 
-    if direction == Direction.MAX:
+    if direction.upper() == Direction.MAX:
         param_combination = max_hp
         best_val = str(max_val)
         return_dict = max_return_dict
-    elif direction == Direction.MIN:
+    elif direction.upper() == Direction.MIN:
         param_combination = min_hp
         best_val = str(min_val)
         return_dict

@@ -203,9 +203,9 @@ class DifferentialEvolution:
 
             new_gen_avg = sum(self._scores)/self.n
 
-            if self.direction == Direction.MAX:
+            if self.direction.upper() == Direction.MAX:
                 new_gen_best = max(self._scores)
-            elif self.direction == Direction.MIN:
+            elif self.direction.upper() == Direction.MIN:
                 new_gen_best = min(self._scores)
             else:
                 raise ValueError('invalid direction: ' + self.direction)
@@ -377,9 +377,9 @@ class DifferentialEvolution:
             parsed_population = self._parse_to_dict(parsed_population)
             self._scores = self.objective_function(parsed_population, name=self.name)
 
-            if self.direction == Direction.MAX:
+            if self.direction.upper() == Direction.MAX:
                 new_gen_best = max(self._scores)
-            elif self.direction == Direction.MIN:
+            elif self.direction.upper() == Direction.MIN:
                 new_gen_best = min(self._scores)
             else:
                 raise ValueError('invalid direction: ' + self.direction)
@@ -402,11 +402,11 @@ class DifferentialEvolution:
         for i in range(self.n):
             trial_vec_score_i = trial_population_scores[i]
             target_vec_score_i = self._scores[i]
-            if self.direction == Direction.MAX:
+            if self.direction.upper() == Direction.MAX:
                 if trial_vec_score_i > target_vec_score_i:
                     self._scores[i] = trial_vec_score_i
                     population[i] = trial_population[i]
-            elif self.direction == Direction.MIN:
+            elif self.direction.upper() == Direction.MIN:
                 if trial_vec_score_i < target_vec_score_i:
                     self._scores[i] = trial_vec_score_i
                     population[i] = trial_population[i]
@@ -732,7 +732,7 @@ def _get_best(root_logdir, direction):
 
 
 
-    if direction == Direction.MAX:
+    if direction.upper() == Direction.MAX:
         return_dict = {}
         with hdfs.open_file(max_logdir + '/.return.json', flags="r") as fi:
             return_dict = json.loads(fi.read())

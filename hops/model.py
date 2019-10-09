@@ -17,9 +17,9 @@ urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
 
 def get_best_model(name, metric, direction):
 
-    if direction == Metric.MAX:
+    if direction.upper() == Metric.MAX:
         direction = "desc"
-    elif direction == Metric.MIN:
+    elif direction.upper() == Metric.MIN:
         direction = "asc"
     else:
         raise Exception("Invalid direction, should be Metric.MAX or Metric.MIN")
