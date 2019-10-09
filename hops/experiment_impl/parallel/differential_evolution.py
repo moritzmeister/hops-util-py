@@ -140,7 +140,7 @@ class DifferentialEvolution:
     _ordered_population_dict = []
     _param_names = []
 
-    def __init__(self, objective_function, parbounds, types, ordered_dict, direction = Direction.MAX, generations=10, population=10, mutation=0.5, crossover=0.7, name="no-name"):
+    def __init__(self, objective_function, parbounds, types, ordered_dict, direction=Direction.MAX, generations=10, population=10, mutation=0.5, crossover=0.7, name="no-name"):
         """
 
         Args:
