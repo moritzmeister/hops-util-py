@@ -12,6 +12,10 @@ Whenever a function to run an experiment is invoked it is also registered in the
 
 """
 
+class Direction:
+    MAX = "MAX"
+    MIN = "MIN"
+
 from hops.experiment_impl import launcher as launcher
 from hops.experiment_impl.parallel import differential_evolution as diff_evo_impl, grid_search as grid_search_impl, \
     random_search as r_search_impl
@@ -665,7 +669,3 @@ def _end_run(sc):
     sc.setJobGroup("", "")
 
 atexit.register(_exit_handler)
-
-class Direction:
-    MAX = "MAX"
-    MIN = "MIN"
