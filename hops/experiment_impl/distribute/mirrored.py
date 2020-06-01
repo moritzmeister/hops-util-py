@@ -17,6 +17,8 @@ import json
 
 from . import allreduce_reservation
 
+import tensorflow.compat.v2 as tf
+
 
 def _run(sc, map_fun, run_id, local_logdir=False, name="no-name", evaluator=False):
     """
@@ -146,7 +148,8 @@ def _prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator,
             print('-------------------------------------------------------')
             print('Started running task')
             task_start = time.time()
-            retval = map_fun()
+            with tf.distribute.experimental.MultiWorkerMirroredStrategy():
+                retval = map_fun()
 
             if is_chief:
                 experiment_utils._handle_return_simple(retval, experiment_utils._get_logdir(app_id, run_id), logfile)
