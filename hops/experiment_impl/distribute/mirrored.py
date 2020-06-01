@@ -148,7 +148,9 @@ def _prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator,
             print('-------------------------------------------------------')
             print('Started running task')
             task_start = time.time()
-            with tf.distribute.experimental.MultiWorkerMirroredStrategy():
+            strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+            print("Number of devices: {}".format(strategy.num_replicas_in_sync))
+            with strategy.scope():
                 retval = map_fun()
 
             if is_chief:
