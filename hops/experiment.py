@@ -532,7 +532,7 @@ def parameter_server(map_fun, name='no-name', local_logdir=False, description=No
     finally:
         _end_run(sc)
 
-def mirrored(map_fun, distribution_strategy, name='no-name', local_logdir=False, description=None, evaluator=False):
+def mirrored(map_fun, name='no-name', local_logdir=False, description=None, evaluator=False):
     """
     *Distributed Training*
 
