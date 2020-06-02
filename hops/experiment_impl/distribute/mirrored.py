@@ -19,7 +19,7 @@ import json
 
 from . import allreduce_reservation
 
-def _run(sc, map_fun, run_id, local_logdir=False, name="no-name", evaluator=False):
+def _run(sc, map_fun, run_id, params_dict, local_logdir=False, name="no-name", evaluator=False):
     """
 
     Args:
@@ -45,7 +45,7 @@ def _run(sc, map_fun, run_id, local_logdir=False, name="no-name", evaluator=Fals
     server_addr = server.start()
 
     #Force execution on executor, since GPU is located on executor
-    nodeRDD.foreachPartition(_prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator, util.num_executors()))
+    nodeRDD.foreachPartition(_prepare_func(app_id, run_id, map_fun, params_dict, local_logdir, server_addr, evaluator, util.num_executors()))
 
     logdir = experiment_utils._get_logdir(app_id, run_id)
 
@@ -60,7 +60,7 @@ def _run(sc, map_fun, run_id, local_logdir=False, name="no-name", evaluator=Fals
 
     return logdir, None
 
-def _prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator, num_executors):
+def _prepare_func(app_id, run_id, map_fun, params_dict, local_logdir, server_addr, evaluator, num_executors):
     """
 
     Args:
@@ -150,7 +150,7 @@ def _prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator,
             strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
             print("Number of devices: {}".format(strategy.num_replicas_in_sync))
             with strategy.scope():
-                retval = map_fun()
+                retval = map_fun(**params_dict)
 
             if is_chief:
                 experiment_utils._handle_return_simple(retval, experiment_utils._get_logdir(app_id, run_id), logfile)
