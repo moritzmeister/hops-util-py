@@ -9,6 +9,8 @@ from hops import devices, tensorboard, hdfs
 from hops.experiment_impl.util import experiment_utils
 from hops import util
 
+import tensorflow.compat.v2 as tf
+
 import pydoop.hdfs
 import threading
 import time
@@ -17,7 +19,7 @@ import json
 
 from . import allreduce_reservation
 
-def _run(sc, map_fun, run_id, distribution_strategy, local_logdir=False, name="no-name", evaluator=False):
+def _run(sc, map_fun, run_id, local_logdir=False, name="no-name", evaluator=False):
     """
 
     Args:
@@ -43,7 +45,7 @@ def _run(sc, map_fun, run_id, distribution_strategy, local_logdir=False, name="n
     server_addr = server.start()
 
     #Force execution on executor, since GPU is located on executor
-    nodeRDD.foreachPartition(_prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator, util.num_executors(), distribution_strategy))
+    nodeRDD.foreachPartition(_prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator, util.num_executors()))
 
     logdir = experiment_utils._get_logdir(app_id, run_id)
 
@@ -58,7 +60,7 @@ def _run(sc, map_fun, run_id, distribution_strategy, local_logdir=False, name="n
 
     return logdir, None
 
-def _prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator, num_executors, distribution_strategy):
+def _prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator, num_executors):
     """
 
     Args:
@@ -145,9 +147,9 @@ def _prepare_func(app_id, run_id, map_fun, local_logdir, server_addr, evaluator,
             print('-------------------------------------------------------')
             print('Started running task')
             task_start = time.time()
-            # strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-            print("Number of devices: {}".format(distribution_strategy.num_replicas_in_sync))
-            with distribution_strategy.scope():
+            strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+            print("Number of devices: {}".format(strategy.num_replicas_in_sync))
+            with strategy.scope():
                 retval = map_fun()
 
             if is_chief:
